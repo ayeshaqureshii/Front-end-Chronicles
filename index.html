@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic Tac</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&display=swap" rel="stylesheet">
+    <script>
+        const KittenImages=[
+            'food1.gif',
+            'food2.gif',
+            'food3.gif',
+            'food4.gif',
+            'food5.gif',
+            'food6.gif'
+        ];
+        
+        let isProcessing = false;
+        let flippedCards = [];
+        let moves=0;
+
+        // sound effects 
+
+        const sounds = {
+            popup : new Audio ('pop.mp3'),
+            click : new Audio  ('click.mp3'),
+            flip : new Audio('sparkle.mp3'),
+            win : new Audio('win.mp3')
+
+        };
+        function playSound(name){
+            if (sounds[name]){
+                sounds[name].currentTime =0;
+                sounds[name].play().catch(e => console.log("Sound play prevented"));
+
+            }
+        }
+        // pop up logic
+        window.onload=()=> {
+            playSound('popup');
+        }
+        function confirmPlay(choice){
+            playSound('click');
+            if(choice){
+                document.getElementById('overlay').classList.add('hidden');
+                initiateGameSequence();
+            } else {
+                alert("The food will be waiting for you!")
+            }
+        }
+        
+        function initiateGameSequence(){
+            const startPage = document.getElementById("startPage");
+            const mainContent = document.getElementById("mainContent");
+            startPage.classList.remove('hidden');
+            setTimeout(()=>{
+                startPage.classList.add('hidden');
+                mainContent.classList.remove("hidden");
+                startGame();
+               
+           },2500);
+    }
+          
+            
+        
+        function startGame(){
+            moves=0;
+            flippedCards=[];
+            isProcessing = false;
+            document.getElementById('moves').innerText = "moves: 0";
+            document.getElementById('game-board').innerHTML = '';
+            document.getElementById('win-message').classList.add('hidden');
+
+            let images =[...KittenImages,...KittenImages];
+            images.sort(()=> Math.random()-0.5);
+
+            images.forEach((src)=> {
+                const card = document.createElement('div');
+                card.classList.add('card');
+                card.dataset.image = src;
+
+                const img = document.createElement('img');
+                img.src = src;
+                card.appendChild(img);
+                card.addEventListener('click',()=> flipCard(card));
+                document.getElementById('game-board').appendChild(card);
+                
+            });
+        }
+        
+        function flipCard(card){
+
+            if (isProcessing || card.classList.contains('flipped') || card.classList.contains('matched')) return;
+
+            playSound('flip');
+            card.classList.add('flipped');
+            flippedCards.push(card);
+
+            if (flippedCards.length ===2 ){
+                moves++;
+                document.getElementById('moves').innerText = `moves: ${moves}`;
+                isProcessing = true; 
+
+                const [first,second] = flippedCards;
+                if (first.dataset.image=== second.dataset.image){
+                first.classList.add('matched');
+                second.classList.add('matched');
+                flippedCards = [];
+                isProcessing= false;
+
+                if (document.querySelectorAll('.matched').length === document.querySelectorAll('.card').length) {
+                    playSound('win');
+                    document.getElementById('win-message').classList.remove('hidden');
+                }
+            
+            
+                }else {
+                   setTimeout(()=>{
+                        first.classList.remove('flipped');
+                        second.classList.remove('flipped');
+                        flippedCards= [];
+                        isProcessing= false;
+
+                },800);
+            }
+
+            
+        }
+    }
+       
+        
+        
+
+    </script>
+    <style>
+        body{
+            font-family: 'Pixelify Sans', sans-serif;
+            text-align: center;
+            background-image: url(bg.gif) ;
+            background-position: center;
+            background-size: cover;
+            background-attachment: fixed;
+            margin: 0;
+            padding: 20px;
+            background-attachment: fixed;
+            overflow-x: hidden;
+        }
+        .hidden{ display:none !important; }
+
+        /* Welcome popup */
+        #overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height:100% ;
+            background: rgba (245, 12, 210,0.179);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+        .popup{
+            background: #fffec9;
+            border: 4px solid #d9bfd4;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 10px 10px 0px #ffbde1;
+        }
+        .popup button{
+            background: #fffec9;
+            border: 4px solid #d6a1bb;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 10px 10px 0px #d6a1bb;
+
+        }
+        .popup button:hover { 
+            background: #ffbde1; 
+        }
+
+        #startpage{
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            background-repeat: no-repeat;
+            background-position: center;
+            animation: fadeIn 3s ease-out;
+        }
+
+        .slogan{
+            font-size: 2.8rem;
+            color: rgb(214,161,187);
+            margin-bottom: 40px;
+            opacity: 0;
+            animation: sloganAnimation 2s ease-out 1a forwards;
+        }
+        @keyframes fadeIn {
+            from {opacity: 0;}
+            to{opacity: 1;}
+            
+        }
+        @keyframes sloganAnimation{
+            from {opacity: 0;}
+            to{opacity: 1;}
+        }
+        .hidden{
+            display: none;
+        }
+
+        .title-bar{
+            position: fixed;
+            top: 0;
+            left: 0;
+            right:0;
+            height: 45px;
+            background: #d9bfd4;
+            border-bottom: 2px none #ffbde1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 12px;
+            box-sizing: border-box;
+            z-index: 1000;
+            
+            
+        }
+        .drag-region{
+            margin-right: 75px;
+            font-weight: bold;
+            font-size: 20px;
+            color: #fffec9;
+            flex-grow: 1;
+        }
+
+
+        
+       
+
+        #game-board{
+            display: grid;
+            grid-template-columns: repeat(4,100px);
+            grid-gap: 10px;
+            justify-self: center;
+            margin-top: 70px;
+            flex-grow: 1;
+        }
+        .card{
+            width: 100px;
+            height:100px;
+            background-color: bisque;
+            border: 2px dashed #e6c6;
+            cursor:pointer;
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+            flex-grow: 1;
+        }
+        .card img{
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+
+        }
+        .card.flipped img{
+            display: block;
+
+        }
+        .card.matched{
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        #win-message {
+            background: white; padding: 20px; border-radius: 15px;
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            border: 4px solid #d6a1bb; z-index: 3000;
+        }
+        
+    </style>
+</head>
+<body>
+
+    <div id="overlay">
+        <div class="popup">
+            <h2>Do you want to play <br> Match the Food?</h2>
+            <button onclick="confirmPlay(true)">YES</button>
+            <button onclick="confirmPlay(false)">NO</button>
+        </div>
+    </div>
+
+    <div id="startPage" class = "hidden">
+        <div class="slogan">MATCH THE FOOD</div>
+    </div>
+    <div id="mainContent" class ="hidden">
+            <div class="title-bar">
+                <div class="drag-region">YUMMY ADVENTURES</div>
+                
+            </div>
+            <div id="game-board"></div>
+            <p id="moves" style="color: beige; background: #ffbde1; display: inline-block; padding: 5px 10px; border-radius:10px;">moves: 0</p>
+    
+            <div id="win-message" class="hidden">
+                <h2>you matched all the food! <br> ⋆˚꩜｡𐔌՞. .՞𐦯⋆. 𐙚 ˚</h2>
+                <button onclick="startGame()">play again</button>
+            </div> 
+      
+    </div>
+        
+
+   
+    
+</body>
+</html>
